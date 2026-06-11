@@ -63,15 +63,26 @@ if [[ ! -f "${ENTRY}" ]]; then
 fi
 
 # ---------------------------------------------------------------------------
-# Load .env if present (non-interactive server sessions may lack env vars)
+# Load .env if present — parse line-by-line to handle special characters
+# safely (avoids bash interpreting passwords as commands)
 # ---------------------------------------------------------------------------
 ENV_FILE="${REPO_DIR}/.env"
 if [[ -f "${ENV_FILE}" ]]; then
-  # Export only lines that are KEY=VALUE (skip comments and blanks)
-  set -o allexport
-  # shellcheck source=/dev/null
-  source "${ENV_FILE}"
-  set +o allexport
+  while IFS='=' read -r key value || [[ -n "${key}" ]]; do
+    # Skip blank lines and comments
+    [[ -z "${key}" || "${key}" =~ ^[[:space:]]*# ]] && continue
+    # Strip inline comments and surrounding whitespace from value
+    value="${value%%#*}"
+    value="${value#"${value%%[![:space:]]*}"}"
+    value="${value%"${value##*[![:space:]]}"}"
+    # Remove surrounding single or double quotes
+    if [[ "${value}" =~ ^\"(.*)\"$ ]]; then
+      value="${BASH_REMATCH[1]}"
+    elif [[ "${value}" =~ ^\'(.*)\'$ ]]; then
+      value="${BASH_REMATCH[1]}"
+    fi
+    export "${key}=${value}"
+  done < "${ENV_FILE}"
 fi
 
 # ---------------------------------------------------------------------------
