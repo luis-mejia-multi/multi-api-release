@@ -10,7 +10,8 @@
     "format": "prettier --write \"src/**/*.ts\"",
     "lint": "eslint \"src/**/*.ts\" --fix",
     "cli": "node dist/main.js",
-    "cli:dev": "ts-node -r tsconfig-paths/register src/main.ts"
+    "cli:dev": "ts-node -r tsconfig-paths/register src/main.ts",
+    "install:global": "sudo ln -sf \"$(pwd)/scripts/multi-release.sh\" /usr/local/bin/multi-release && echo 'Symlink created: /usr/local/bin/multi-release'"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
