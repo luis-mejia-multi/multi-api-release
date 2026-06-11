@@ -8,7 +8,11 @@ import { InteractiveCommand } from './cli/commands/interactive.command';
 const HELP_FLAGS = new Set(['-h', '--help', '-V', '--version']);
 
 function isHelpRequest(): boolean {
-  return process.argv.slice(2).some((a) => HELP_FLAGS.has(a));
+  // Only intercept top-level --help / -V (first arg).
+  // Subcommand help (e.g. "release --help") goes through full NestJS bootstrap
+  // so Commander can display subcommand-specific help correctly.
+  const firstArg = process.argv[2];
+  return firstArg !== undefined && HELP_FLAGS.has(firstArg);
 }
 
 function isInteractiveMode(): boolean {
